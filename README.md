@@ -22,7 +22,7 @@ El proyecto está configurado para conectarse a una base de datos local llamada 
 Ejecutar el siguiente comando en tu gestor de base de datos (MySQL Workbench, consola, etc.):
 
 ```sql
-CREATE DATABASE hospital_db;
+CREATE DATABASE clinica_db;
 ```
 
 ## Tecnologías Utilizadas
