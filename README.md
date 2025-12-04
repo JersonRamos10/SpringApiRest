@@ -32,6 +32,8 @@ CREATE DATABASE clinica_db;
 - Lombok
 - MySQL Connector
 
+## Endpoints
+
 | MEtodo | URL | DescripciOn |
 | :--- | :--- | :--- |
 | **POST** | `/api/pacientes` | Crea un nuevo paciente. Requiere JSON en el cuerpo. |
