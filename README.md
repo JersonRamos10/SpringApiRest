@@ -31,3 +31,11 @@ CREATE DATABASE clinica_db;
 - Spring Data JPA
 - Lombok
 - MySQL Connector
+
+| MEtodo | URL | DescripciOn |
+| :--- | :--- | :--- |
+| **POST** | `/api/pacientes` | Crea un nuevo paciente. Requiere JSON en el cuerpo. |
+| **GET** | `/api/pacientes` | Lista todos los pacientes registrados. |
+| **GET** | `/api/pacientes/{dui}` | Obtiene el detalle de un paciente por su DUI. |
+| **PUT** | `/api/pacientes/{dui}` | Actualiza los datos de un paciente existente. |
+| **DELETE** | `/api/pacientes/{dui}` | Elimina un paciente del sistema. |
