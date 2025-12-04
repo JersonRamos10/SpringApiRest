@@ -19,8 +19,33 @@ public class PacienteCrudFlowsConfig {
     public PacienteCrudFlowsConfig(PacienteService pacienteService) {
         this.pacienteService = pacienteService;
     }
+    /**
+     * Metodo auxiliar para extraer el DUI de forma robusta.
+     * Si falla el header estandar, lo busca manualmente en la URL.
+     */
+    private String extractDui(MessageHeaders headers) {
+        //intenta obtenerlo de la forma estándar
+        String dui = (String) headers.get("dui");
+        //Si es null, lo saca manualmente de la URL
+        if (dui == null) {
+            try {
+                String urlString = (String) headers.get("http_requestUrl");
+                if (urlString != null) {
 
-    // Flujo para CREAR Paciente (POST /api/pacientes)
+                    if (urlString.endsWith("/")) {
+                        urlString = urlString.substring(0, urlString.length() - 1);
+                    }
+                    dui = urlString.substring(urlString.lastIndexOf('/') + 1);
+                    System.out.println("DEBUG: DUI extraído manualmente de URL para operación: " + dui);
+                }
+            } catch (Exception e) {
+                System.err.println("Error extrayendo DUI: " + e.getMessage());
+            }
+        }
+        return dui;
+    }
+
+    //Flujo para CREAR Paciente (POST /api/pacientes)
     @Bean
     public IntegrationFlow createPacienteFlow() {
         return IntegrationFlow.from(
@@ -35,21 +60,23 @@ public class PacienteCrudFlowsConfig {
                 .get();
     }
 
-    //  Flujo para OBTENER Paciente por DUI (GET /api/pacientes/{dui})
+    // Flujo para OBTENER Paciente por DUI (GET /api/pacientes/{dui})
     @Bean
     public IntegrationFlow getPacienteByDuiFlow() {
         return IntegrationFlow.from(
                         Http.inboundGateway("/api/pacientes/{dui}")
                                 .requestMapping(m -> m.methods(HttpMethod.GET)
                                         .produces("application/json"))
-                                .payloadExpression("#pathVariables.dui")
                                 .statusCodeExpression("200"))
-                .handle(pacienteService, "getPacienteByDui")
+                .handle((Object payload, MessageHeaders headers) -> {
+                    String dui = extractDui(headers);
+                    return pacienteService.getPacienteByDui(dui);
+                })
                 .transform(new ObjectToJsonTransformer())
                 .get();
     }
 
-    //  Flujo para OBTENER TODOS los Pacientes (GET /api/pacientes)
+    // Flujo para OBTENER TODOS los Pacientes (GET /api/pacientes)
     @Bean
     public IntegrationFlow getAllPacientesFlow() {
         return IntegrationFlow.from(
@@ -72,8 +99,9 @@ public class PacienteCrudFlowsConfig {
                                         .produces("application/json"))
                                 .statusCodeExpression("200"))
                 .transform(new JsonToObjectTransformer(PacienteDto.class))
+
                 .handle((PacienteDto payload, MessageHeaders headers) -> {
-                    String duiFromPath = (String) headers.get("dui");
+                    String duiFromPath = extractDui(headers);
                     return pacienteService.updatePaciente(duiFromPath, payload);
                 })
                 .transform(new ObjectToJsonTransformer())
@@ -87,10 +115,11 @@ public class PacienteCrudFlowsConfig {
                         Http.inboundGateway("/api/pacientes/{dui}")
                                 .requestMapping(m -> m.methods(HttpMethod.DELETE)
                                         .produces("application/json"))
-
-                                .payloadExpression("#pathVariables.dui")
                                 .statusCodeExpression("200"))
-                .handle(pacienteService, "deletePaciente")
+                .handle((Object payload, MessageHeaders headers) -> {
+                    String dui = extractDui(headers); // Usamos el extractor manual
+                    return pacienteService.deletePaciente(dui);
+                })
                 .transform(new ObjectToJsonTransformer())
                 .get();
     }
