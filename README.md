@@ -25,6 +25,13 @@ Ejecutar el siguiente comando en tu gestor de base de datos (MySQL Workbench, co
 CREATE DATABASE clinica_db;
 ```
 
+```sql
+CREATE TABLE Usuarios(
+    Id INT PRIMARY KEY,
+    Edad INT CHECK (Edad >= 18)
+);
+
+```
 ## Tecnologías Utilizadas
 - Spring Boot 3.3.12
 - Spring Integration HTTP
